@@ -1,10 +1,12 @@
 import React, {Component} from 'react';
 
+
 class Table extends Component {
     constructor({context}) {
        super(context) //since we are extending class Table so we have to use super in order to override Component class constructor
        
        this.state = {
+          header: [],
           customerName:context.customerName, 
           dataSet: context.dictionary
          }; 
@@ -17,11 +19,23 @@ class Table extends Component {
          });
        };
 
-       handleRemoveRow = () => {
-         this.setState((prevState, row) => {
-           return { row: prevState.row.slice(1) };
-         });
-       }; 
+
+       handleRemoveRow = (props) => {
+         let rows = [...this.state.dataSet]
+         rows.splice(1)
+         this.setState({ 
+            dataSet: rows
+         })
+       };
+
+       deleteTable = (props) => {
+          let header = [...this.state.customerName]
+          header.splice(props)
+          this.setState({
+             customerName: header
+          })
+          
+       }
        
  
     render() { //Whenever our class runs, render method will be called automatically, it may have already defined in the constructor behind the scene.
@@ -34,7 +48,8 @@ class Table extends Component {
                {this.renderTableData()}
                </tbody>
             </table>
-            <button className='deleteDictionary' >Delete Dictionary</button>
+            <button onClick={this.deleteTable.bind()} className='deleteDictionary' >Delete Dictionary</button>
+            <button className='addRow' >Add Row</button>
             
           </div>
        )
@@ -52,32 +67,40 @@ class Table extends Component {
             const { id, domain, range } = row1
             var error = ''
             
-            if(id!== pId && domain === pDomain){
-               error='duplicated domain'
+            if(id!== pId && domain === pDomain && range === pRange){
+               error='duplicates'
+            }
+            
+            if(id!== pId && domain === pRange && range === pDomain){
+               error='cycles'
             }
 
-            if(id!== pId && range === pRange){
-               error='duplicated range'
+            if(id!== pId && domain === pDomain && range!==pRange){
+               error='forks'
             }
+
+           /* if(id!== pId && domain === pRange){
+               error='chains'
+            } */
 
             return error
          })
-
+         
          return (
             <tr key={id}>
                <td>{id}</td>
                <td>{domain}</td>
                <td>{range}</td>
                <td>{valid}</td>
-               <td onClick={this.handleRemoveRow}>(-)</td>
                <td onClick={this.handleAddRow}>(/)</td>
+               <td onClick={this.handleRemoveRow.bind()}>(-)</td>
             </tr>
                )
       })
    }
 
    renderTableHeader() {
-      let header = Object.keys(this.state.dataSet[0])
+      let header = ['Id', 'Domain','Range', 'Validation', 'Modify', 'Remove']
       return header.map((key, index) => {
          return <th key={index}>{key}</th>
       })
